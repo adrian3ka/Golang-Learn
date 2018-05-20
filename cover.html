@@ -1,0 +1,1390 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">LUYWAWG\Project\auth.go (0.0%)</option>
+				
+				<option value="file1">LUYWAWG\Project\errors.go (0.0%)</option>
+				
+				<option value="file2">LUYWAWG\Project\handle_image.go (0.0%)</option>
+				
+				<option value="file3">LUYWAWG\Project\handle_index.go (0.0%)</option>
+				
+				<option value="file4">LUYWAWG\Project\handle_session.go (0.0%)</option>
+				
+				<option value="file5">LUYWAWG\Project\handle_user.go (0.0%)</option>
+				
+				<option value="file6">LUYWAWG\Project\id.go (0.0%)</option>
+				
+				<option value="file7">LUYWAWG\Project\image.go (1.4%)</option>
+				
+				<option value="file8">LUYWAWG\Project\image_store.go (3.4%)</option>
+				
+				<option value="file9">LUYWAWG\Project\main.go (28.9%)</option>
+				
+				<option value="file10">LUYWAWG\Project\middleware.go (0.0%)</option>
+				
+				<option value="file11">LUYWAWG\Project\mysql.go (75.0%)</option>
+				
+				<option value="file12">LUYWAWG\Project\session.go (0.0%)</option>
+				
+				<option value="file13">LUYWAWG\Project\session_store.go (32.1%)</option>
+				
+				<option value="file14">LUYWAWG\Project\template.go (0.0%)</option>
+				
+				<option value="file15">LUYWAWG\Project\user.go (28.3%)</option>
+				
+				<option value="file16">LUYWAWG\Project\user_store.go (23.7%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import "net/http"
+
+func AuthenticateRequest(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        // Redirect the user to login if they’re not authenticated
+        authenticated := false
+        if !authenticated </span><span class="cov0" title="0">{
+                http.Redirect(w, r, "/register", http.StatusFound)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import "errors"
+
+type ValidationError error
+
+var (
+        errNoUsername = ValidationError(errors.New("You must supply a username"))
+        errNoEmail = ValidationError(errors.New("You must supply an email"))
+        errNoPassword = ValidationError(errors.New("You must supply a password"))
+        errPasswordTooShort = ValidationError(errors.New("Your password is too short"))
+        errUsernameExists = ValidationError(errors.New("That username is taken"))
+        errEmailExists = ValidationError(errors.New("That email address has an account"))
+        errCredentialsIncorrect = ValidationError(errors.New("We couldn’t find a user with the supplied username and password combination"))
+        errPasswordIncorrect = ValidationError(errors.New("Password did not match"))
+        errInvalidImageType = ValidationError(errors.New("Please upload only jpeg, gif or png images"))
+        errNoImage = ValidationError(errors.New("Please select an image to upload"))
+        errImageURLInvalid = ValidationError(errors.New("Couldn't download image from the URL you provided"))
+)
+
+func IsValidationError(err error) bool <span class="cov0" title="0">{
+        _, ok := err.(ValidationError)
+        return ok
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+import(
+        "net/http"
+        "fmt"
+        "github.com/julienschmidt/httprouter"
+)
+func HandleImageNew(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        RenderTemplate(w, r, "images/new", nil)
+}</span>
+func HandleImageCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        if r.FormValue("url") != "" </span><span class="cov0" title="0">{
+                HandleImageCreateFromURL(w, r)
+                return
+        }</span>
+        <span class="cov0" title="0">HandleImageCreateFromFile(w, r)</span>
+}
+
+func HandleImageCreateFromURL(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        user := RequestUser(r)
+        image := NewImage(user)
+        image.Description = r.FormValue("description")
+        err := image.CreateFromURL(r.FormValue("url"))
+        if err != nil </span><span class="cov0" title="0">{
+                if IsValidationError(err) </span><span class="cov0" title="0">{
+                        RenderTemplate(w, r, "images/new", map[string]interface{}{
+                                "Error": err,
+                                "ImageURL": r.FormValue("url"),
+                                "Image": image,
+                        })
+                        return
+                }</span>
+                <span class="cov0" title="0">panic(err)</span>
+        }
+        <span class="cov0" title="0">http.Redirect(w, r, "/?flash=Image+Uploaded+Successfully", http.StatusFound)</span>
+}
+
+func HandleImageCreateFromFile(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        user := RequestUser(r)
+        image := NewImage(user)
+        image.Description = r.FormValue("description")
+        file, headers, err := r.FormFile("fileName")
+        fname := headers.Filename
+        // No file was uploaded.
+        if fname == "" </span><span class="cov0" title="0">{
+                RenderTemplate(w, r, "images/new", map[string]interface{}{
+                        "Error": errNoImage,
+                        "Image": image,
+                })
+                return
+        }</span>
+        // A file was uploaded, but an error occurred
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">defer file.Close()
+        err = image.CreateFromFile(file, headers)
+        if err != nil </span><span class="cov0" title="0">{
+                RenderTemplate(w, r, "images/new", map[string]interface{}{
+                        "Error": err,
+                        "Image": image,
+                })
+                return
+        }</span>
+        <span class="cov0" title="0">http.Redirect(w, r, "/?flash=Image+Uploaded+Successfully",http.StatusFound)</span>
+}
+
+func HandleImageShow(w http.ResponseWriter, r *http.Request, params httprouter.Params) <span class="cov0" title="0">{
+        
+        image, err := globalImageStore.Find(params.ByName("imageID"))
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        // 404
+        <span class="cov0" title="0">if image == nil </span><span class="cov0" title="0">{
+                http.NotFound(w, r)
+                return
+        }</span>
+        <span class="cov0" title="0">user, err := globalUserStore.Find(image.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">if user == nil </span><span class="cov0" title="0">{
+                panic(fmt.Errorf("Could not find user %s", image.UserID))</span>
+        }
+        <span class="cov0" title="0">RenderTemplate(w, r, "images/show", map[string]interface{}{
+                "Image": image,
+                "User": user,
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package main
+
+import (
+        "net/http"
+
+        "github.com/julienschmidt/httprouter"
+)
+
+func HandleHome(w http.ResponseWriter, r *http.Request, params httprouter.Params) <span class="cov0" title="0">{
+        images, err := globalImageStore.FindAll(0)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">RenderTemplate(w, r, "index/home", map[string]interface{}{
+                "Images": images,
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package main
+import(
+        "net/http"
+        "github.com/julienschmidt/httprouter"
+)
+func HandleSessionDestroy(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        session := RequestSession(r)
+        if session != nil </span><span class="cov0" title="0">{
+                err := globalSessionStore.Delete(session)
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+        }
+        <span class="cov0" title="0">RenderTemplate(w, r, "sessions/destroy", nil)</span>
+}
+
+func HandleSessionNew(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        next := r.URL.Query().Get("next")
+        RenderTemplate(w, r, "sessions/new", map[string]interface{}{
+                "Next": next,
+        })
+}</span>
+func HandleSessionCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params)<span class="cov0" title="0">{
+        username := r.FormValue("username")
+        password := r.FormValue("password")
+        next := r.FormValue("next")
+        user, err := FindUser(username, password)
+        if err != nil </span><span class="cov0" title="0">{
+                if IsValidationError(err) </span><span class="cov0" title="0">{
+                RenderTemplate(w, r, "sessions/new", map[string]interface{}{
+                        "Error": err,
+                        "User": user,
+                        "Next": next,
+                })
+                return
+        }</span>
+        <span class="cov0" title="0">panic(err)</span>
+        }
+        <span class="cov0" title="0">session := FindOrCreateSession(w, r)
+        session.UserID = user.ID
+        err = globalSessionStore.Save(session)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">if next == "" </span><span class="cov0" title="0">{
+                next = "/"
+        }</span>
+        <span class="cov0" title="0">http.Redirect(w, r, next+"?flash=Signed+in", http.StatusFound)</span>
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package main
+
+import (
+        "net/http"
+        "fmt"
+        "github.com/julienschmidt/httprouter"
+)
+
+func HandleUserNew(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        RenderTemplate(w, r, "users/new", nil)
+}</span>
+
+func HandleUserCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        user, err := NewUser(                         //user.go
+                r.FormValue("username"),
+                r.FormValue("email"),
+                r.FormValue("password"),
+        )
+        fmt.Println(r.FormValue("username"),
+                                r.FormValue("email"),
+                                r.FormValue("password"),
+                                )
+        if err != nil </span><span class="cov0" title="0">{
+                if IsValidationError(err) </span><span class="cov0" title="0">{
+                        RenderTemplate(w, r, "users/new", map[string]interface{}{
+                                "Error": err.Error(),
+                                "User":  user,
+                                "Testing" : "Ini Hanya Coba - coba ",
+                        })
+                        return
+                }</span>
+                <span class="cov0" title="0">panic(err)</span>
+        }
+        
+        <span class="cov0" title="0">err = globalUserStore.Save(user)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        
+        // Create a new session
+        <span class="cov0" title="0">session := NewSession(w)
+        session.UserID = user.ID
+        err = globalSessionStore.Save(session)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+
+        <span class="cov0" title="0">http.Redirect(w, r, "/?flash=User+created", http.StatusFound)</span>
+}
+func HandleUserEdit(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        user := RequestUser(r)
+        RenderTemplate(w, r, "users/edit", map[string]interface{}{
+                "User": user,
+        })
+}</span>
+func HandleUserUpdate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) <span class="cov0" title="0">{
+        currentUser := RequestUser(r)
+        email := r.FormValue("email")
+        currentPassword := r.FormValue("currentPassword")
+        newPassword := r.FormValue("newPassword")
+        user, err := UpdateUser(currentUser, email, currentPassword,newPassword)
+        if err != nil </span><span class="cov0" title="0">{
+                if IsValidationError(err) </span><span class="cov0" title="0">{
+                        RenderTemplate(w, r, "users/edit", map[string]interface{}{
+                                "Error": err.Error(),
+                                "User": user,
+                        })
+                        return
+                }</span>
+                <span class="cov0" title="0">panic(err)</span>
+        }
+        <span class="cov0" title="0">err = globalUserStore.Save(*currentUser)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">http.Redirect(w, r, "/account?flash=User+updated", http.StatusFound)</span>
+}
+
+func HandleUserShow(w http.ResponseWriter, r *http.Request, params httprouter.Params) <span class="cov0" title="0">{
+        user, err := globalUserStore.Find(params.ByName("userID"))
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        // 404
+        <span class="cov0" title="0">if user == nil </span><span class="cov0" title="0">{
+                http.NotFound(w, r)
+                return
+        }</span>
+        <span class="cov0" title="0">images, err := globalImageStore.FindAllByUser(user, 0)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">RenderTemplate(w, r, "users/show", map[string]interface{}{
+                "Images": images,
+                "User": user,
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package main
+import (
+        "crypto/rand"
+        "fmt"
+)
+        // Source String used when generating a random identifier.
+        const idSource = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        
+        // Save the length in a constant so we don't look it up each time.
+        const idSourceLen = byte(len(idSource))
+        
+        // GenerateID creates a prefixed random identifier.
+func GenerateID(prefix string, length int) string <span class="cov0" title="0">{
+        // Create an array with the correct capacity
+        id := make([]byte, length)
+        // Fill our array with random numbers
+        rand.Read(id)
+        // Replace each random number with an alphanumeric value
+        for i, b := range id </span><span class="cov0" title="0">{
+                id[i] = idSource[b%idSourceLen]
+        }</span>
+        // Return the formatted id
+        <span class="cov0" title="0">return fmt.Sprintf("%s_%s", prefix, string(id))</span>
+}</pre>
+		
+		<pre class="file" id="file7" style="display: none">package main
+import (
+        "io"
+        "mime"
+        "mime/multipart"
+        "net/http"
+        "os"
+        "path/filepath"
+        "time"
+        "fmt"
+        "runtime"
+        "image"
+        "github.com/disintegration/imaging"
+
+)
+type Image struct{
+        ID string
+        UserID string
+        Name string
+        Location string
+        Size int64
+        CreatedAt time.Time
+        Description string
+}
+
+const imageIDLength = 10
+
+func NewImage(user *User) *Image<span class="cov0" title="0">{
+        return &amp;Image{
+                ID: GenerateID("img", imageIDLength),
+                UserID: user.ID,
+                CreatedAt: time.Now(),
+        }
+}</span>
+
+// A map of accepted mime types and their file extension
+var mimeExtensions = map[string]string{
+        "image/png": ".png",
+        "image/jpeg": ".jpg",
+        "image/gif": ".gif",
+}
+
+// A map of accepted mime types and their file extension
+var fileExtensions = map[string]string{
+        ".png": ".png",
+        ".jpg": ".jpg",
+        ".gif": ".gif",
+}
+
+func (image *Image) CreateFromURL(imageURL string) error <span class="cov0" title="0">{
+        // Get the response from the URL
+        response, err := http.Get(imageURL)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // Make sure we have a response
+        <span class="cov0" title="0">if response.StatusCode != http.StatusOK </span><span class="cov0" title="0">{
+                return errImageURLInvalid
+        }</span>
+        <span class="cov0" title="0">defer response.Body.Close()
+        
+        // Ascertain the type of file we downloaded
+        mimeType, _, err := mime.ParseMediaType(response.Header.Get("Content-Type"))
+        fmt.Println(mimeType)
+        if err != nil </span><span class="cov0" title="0">{
+                return errInvalidImageType
+        }</span>
+        // Get an extension for the file
+        <span class="cov0" title="0">ext, valid := mimeExtensions[mimeType]
+        if !valid </span><span class="cov0" title="0">{
+                return errInvalidImageType
+        }</span>
+        // Get a name from the URL
+        <span class="cov0" title="0">image.Name = filepath.Base(imageURL)
+        image.Location = image.ID + ext
+        // Open a file at target location
+        savedFile, err := os.Create("./data/images/" + image.Location)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">defer savedFile.Close()
+        // Copy the entire response to the output flie
+        size, err := io.Copy(savedFile, response.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // The returned value from io.Copy is the number of bytes copied
+        <span class="cov0" title="0">image.Size = size
+        
+        // Create the various resizes of the images
+        err = image.CreateResizedImages()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        
+        // Save our image to the store
+        <span class="cov0" title="0">return globalImageStore.Save(image)</span>
+}
+
+func (image *Image) CreateFromFile(file multipart.File, headers *multipart.FileHeader) error <span class="cov0" title="0">{
+
+        // Move our file to an appropriate place, with an appropriate name
+        image.Name = headers.Filename
+        image.Location = image.ID + filepath.Ext(image.Name)
+        ext := filepath.Ext(image.Name)
+        _, valid := fileExtensions[ext]
+        if !valid </span><span class="cov0" title="0">{
+                return errInvalidImageType
+        }</span>
+        
+        // Open a file at target location
+        <span class="cov0" title="0">savedFile, err := os.Create("./data/images/" + image.Location)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">defer savedFile.Close()
+
+        // Copy the uploaded file to the target location
+        size, err := io.Copy(savedFile, file)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">image.Size = size
+
+        // Create the various resizes of the images
+        err = image.CreateResizedImages()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        
+        // Save the image to the database
+        <span class="cov0" title="0">return globalImageStore.Save(image)</span>
+}
+//Kenapa bisa pake im doang?, lihat di main.go, ingat2 lagi
+/*
+router.ServeFiles(
+        "/im/*filepath",
+        http.Dir("data/images/"),
+)
+*/
+func (image *Image) StaticRoute() string <span class="cov0" title="0">{
+        return "/im/" + image.Location
+}</span>
+func (image *Image) ShowRoute() string <span class="cov0" title="0">{
+        return "/image/" + image.ID
+}</span>
+func (image *Image) StaticThumbnailRoute() string <span class="cov0" title="0">{
+        return "/im/thumbnail/" + image.Location
+}</span>
+func (image *Image) StaticPreviewRoute() string <span class="cov0" title="0">{
+        return "/im/preview/" + image.Location
+}</span>
+
+var widthThumbnail = 400
+func (image *Image) resizeThumbnail(errorChan chan error, srcImage image.Image) <span class="cov0" title="0">{
+        dstImage := imaging.Thumbnail(srcImage, widthThumbnail, widthThumbnail, imaging.Lanczos)
+
+        destination := "./data/images/thumbnail/" + image.Location
+        errorChan &lt;- imaging.Save(dstImage, destination)
+}</span>
+
+var widthPreview = 800
+func (image *Image) resizePreview(errorChan chan error, srcImage image.Image) <span class="cov0" title="0">{
+        size := srcImage.Bounds().Size()
+        ratio := float64(size.Y) / float64(size.X)
+        targetHeight := int(float64(widthPreview) * ratio)
+        dstImage := imaging.Resize(srcImage, widthPreview, targetHeight,imaging.Lanczos)
+        destination := "./data/images/preview/" + image.Location
+        errorChan &lt;- imaging.Save(dstImage, destination)
+}</span>
+
+func (image *Image) CreateResizedImages() error <span class="cov0" title="0">{
+        // Generate an image from file
+        srcImage, err := imaging.Open("./data/images/" + image.Location)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // Create a channel to receive errors on
+        <span class="cov0" title="0">errorChan := make(chan error)
+        // Process each size
+        go image.resizePreview(errorChan, srcImage)
+        go image.resizeThumbnail(errorChan, srcImage)
+        // Wait for images to finish resizing
+        for i := 0; i &lt; 2; i++ </span><span class="cov0" title="0">{
+                err := &lt;-errorChan
+                fmt.Println("err img resize&gt;&gt; ",err)
+                if err == nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+        <span class="cov0" title="0">return err</span>
+}
+
+func init() <span class="cov8" title="1">{
+        // Ensure our goroutines run across all cores
+        runtime.GOMAXPROCS(runtime.NumCPU())
+}</pre>
+		
+		<pre class="file" id="file8" style="display: none">package main
+
+import "database/sql"
+
+var globalImageStore ImageStore
+
+type ImageStore interface{
+        Save(image *Image) error
+        Find(id string) (*Image, error)
+        FindAll(offset int) ([]Image, error)
+        FindAllByUser(user *User, offset int) ([]Image, error)
+}
+
+type DBImageStore struct{
+        db *sql.DB
+}
+
+func NewDBImageStore() ImageStore <span class="cov8" title="1">{
+        return &amp;DBImageStore{
+                db: globalMySQLDB,
+        }
+}</span>
+func (store *DBImageStore) Save(image *Image) error <span class="cov0" title="0">{
+        _, err := store.db.Exec(
+                `
+                REPLACE INTO images
+                (id, user_id, name, location, description, size,created_at)
+                VALUES
+                (?, ?, ?, ?, ?, ?, ?)
+                `,
+                image.ID,
+                image.UserID,
+                image.Name,
+                image.Location,
+                image.Description,
+                image.Size,
+                image.CreatedAt,
+        )
+        return err
+}</span>
+func (store *DBImageStore) Find(id string) (*Image, error) <span class="cov0" title="0">{
+        row := store.db.QueryRow(
+                `
+                SELECT id, user_id, name, location, description, size, created_at
+                FROM images
+                WHERE id = ?`,
+                id,
+                )
+        image := Image{}
+        err := row.Scan(
+                &amp;image.ID,
+                &amp;image.UserID,
+                &amp;image.Name,
+                &amp;image.Location,
+                &amp;image.Description,
+                &amp;image.Size,
+                &amp;image.CreatedAt,
+        )
+        return &amp;image, err
+}</span>
+const pageSize = 25
+
+func (store *DBImageStore) FindAll(offset int) ([]Image, error) <span class="cov0" title="0">{
+        rows, err := store.db.Query(
+        `
+                SELECT id, user_id, name, location, description, size, created_at
+                FROM images
+                ORDER BY created_at DESC
+                LIMIT ?
+                OFFSET ?
+                `,
+                pageSize,
+                offset,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">images := []Image{}
+        for rows.Next() </span><span class="cov0" title="0">{
+                image := Image{}
+                err := rows.Scan(
+                        &amp;image.ID,
+                        &amp;image.UserID,
+                        &amp;image.Name,
+                        &amp;image.Location,
+                        &amp;image.Description,
+                        &amp;image.Size,
+                        &amp;image.CreatedAt,
+                )
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">images = append(images, image)</span>
+        }
+        <span class="cov0" title="0">return images, nil</span>
+}
+
+
+func (store *DBImageStore) FindAllByUser(user *User, offset int) ([]Image, error) <span class="cov0" title="0">{
+        rows, err := store.db.Query(
+                `
+                SELECT id, user_id, name, location, description, size, created_at
+                FROM images
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                OFFSET ?`,
+                user.ID,
+                pageSize,
+                offset,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">images := []Image{}
+        for rows.Next() </span><span class="cov0" title="0">{
+                image := Image{}
+                err := rows.Scan(
+                        &amp;image.ID,
+                        &amp;image.UserID,
+                        &amp;image.Name,
+                        &amp;image.Location,
+                        &amp;image.Description,
+                        &amp;image.Size,
+                        &amp;image.CreatedAt,
+                )
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">images = append(images, image)</span>
+        }
+        <span class="cov0" title="0">return images, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package main
+
+import (
+        "log"
+        "net/http"
+        "fmt"
+        "github.com/julienschmidt/httprouter"
+)
+
+func init() <span class="cov8" title="1">{
+        fmt.Println("Init Main")
+        // Assign a user store
+        store, err := NewFileUserStore("./data/users.json")
+        if err != nil </span><span class="cov0" title="0">{
+                panic(fmt.Errorf("Error creating user store: %s", err))</span>
+        }
+        <span class="cov8" title="1">globalUserStore = store
+
+        // Assign a session store
+        sessionStore, err := NewFileSessionStore("./data/sessions.json")
+        if err != nil </span><span class="cov0" title="0">{
+                panic(fmt.Errorf("Error creating session store: %s", err))</span>
+        }
+        <span class="cov8" title="1">globalSessionStore = sessionStore
+
+        // Assign a sql database
+        db, err := NewMySQLDB("root:@tcp(127.0.0.1:3306)/gophr")
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov8" title="1">globalMySQLDB = db
+
+        // Assign an image store
+        globalImageStore = NewDBImageStore()</span>
+}
+
+func main() <span class="cov0" title="0">{
+        router := NewRouter()
+
+        router.Handle("GET", "/", HandleHome)
+        
+        // Add the route handler
+        router.Handle("POST", "/register", HandleUserCreate) //handle_user.go
+        router.Handle("GET", "/register", HandleUserNew) //handle_user.go
+        
+        router.Handle("GET", "/login", HandleSessionNew)
+        router.Handle("POST", "/login", HandleSessionCreate)
+        router.Handle("GET", "/image/:imageID", HandleImageShow)
+        router.Handle("GET", "/user/:userID", HandleUserShow)
+        
+        
+        router.ServeFiles(
+                "/im/*filepath",
+                http.Dir("data/images/"),
+        )
+        
+        router.ServeFiles(
+                "/assets/*filepath",
+                http.Dir("assets/"),
+        )
+        
+        
+        secureRouter := NewRouter()
+        secureRouter.Handle("GET", "/sign-out", HandleSessionDestroy)
+        secureRouter.Handle("GET", "/account", HandleUserEdit)
+        secureRouter.Handle("POST", "/account", HandleUserUpdate)
+        secureRouter.Handle("GET", "/images/new", HandleImageNew)
+        secureRouter.Handle("POST", "/images/new", HandleImageCreate)
+
+
+
+        middleware := Middleware{}
+        middleware.Add(router)
+        
+        middleware.Add(http.HandlerFunc(RequireLogin))
+        middleware.Add(secureRouter)
+
+        log.Fatal(http.ListenAndServe(":3000", middleware))
+}</span>
+
+// Creates a new router
+func NewRouter() *httprouter.Router <span class="cov0" title="0">{
+        router := httprouter.New()
+        router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span>{<span class="cov0" title="0">}</span>)
+        <span class="cov0" title="0">return router</span>
+}
+
+
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package main
+
+import "net/http"
+
+type Middleware []http.Handler
+
+func (m *Middleware) Add(handler http.Handler) <span class="cov0" title="0">{
+        *m = append(*m, handler)
+}</span>
+
+func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        // Wrap the supplied ResponseWriter
+        mw := NewMiddlewareResponseWriter(w)
+
+        // Loop through all of the registered handlers
+        for _, handler := range m </span><span class="cov0" title="0">{
+                // Call the handler with our MiddlewareResponseWriter
+                handler.ServeHTTP(mw, r)
+
+                // If there was a write, stop processing
+                if mw.written </span><span class="cov0" title="0">{
+                        return
+                }</span>
+        }
+        // If no handlers wrote to the response, it’s a 404
+        <span class="cov0" title="0">http.NotFound(w, r)</span>
+}
+
+type MiddlewareResponseWriter struct {
+        http.ResponseWriter
+        written bool
+}
+
+func NewMiddlewareResponseWriter(w http.ResponseWriter) *MiddlewareResponseWriter <span class="cov0" title="0">{
+        return &amp;MiddlewareResponseWriter{
+                ResponseWriter: w,
+        }
+}</span>
+
+func (w *MiddlewareResponseWriter) Write(bytes []byte) (int, error) <span class="cov0" title="0">{
+        w.written = true
+        return w.ResponseWriter.Write(bytes)
+}</span>
+
+func (w *MiddlewareResponseWriter) WriteHeader(code int) <span class="cov0" title="0">{
+        w.written = true
+        w.ResponseWriter.WriteHeader(code)
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package main
+import (
+        "database/sql"
+        _ "github.com/go-sql-driver/mysql"
+)
+var globalMySQLDB *sql.DB
+func init() <span class="cov8" title="1">{
+        //username : root
+        //password : kosong , setelah : kosong, langsung simbol @
+        db, err := NewMySQLDB("root:@tcp(127.0.0.1:3306)/gophr")
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov8" title="1">globalMySQLDB = db</span>
+}
+func NewMySQLDB(dsn string) (*sql.DB, error) <span class="cov8" title="1">{
+        db, err := sql.Open("mysql", dsn+"?parseTime=true")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return db, db.Ping()</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package main
+import (
+        "time"
+        "net/http"
+        "net/url"
+        //"fmt"
+)
+type Session struct {
+        ID string
+        UserID string
+        Expiry time.Time
+}
+
+const (
+        // Keep users logged in for 3 days
+        sessionLength = 24 * 3 * time.Hour
+        sessionCookieName = "CobaSession"
+        sessionIDLength = 20
+)
+func NewSession(w http.ResponseWriter) *Session <span class="cov0" title="0">{
+        expiry := time.Now().Add(sessionLength)
+        session := &amp;Session{
+                ID: GenerateID("sess", sessionIDLength),
+                        Expiry: expiry,
+                }
+        cookie := http.Cookie{
+                Name: sessionCookieName,
+                Value: session.ID,
+                Expires: expiry,
+        }
+        http.SetCookie(w, &amp;cookie)
+        return session
+}</span>
+func RequestSession(r *http.Request) *Session <span class="cov0" title="0">{
+        cookie, err := r.Cookie(sessionCookieName)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">session, err := globalSessionStore.Find(cookie.Value)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">if session == nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">if session.Expired() </span><span class="cov0" title="0">{
+                globalSessionStore.Delete(session)
+                return nil
+        }</span>
+        <span class="cov0" title="0">return session</span>
+}
+func (session *Session) Expired() bool <span class="cov0" title="0">{
+        return session.Expiry.Before(time.Now())
+}</span>
+func RequestUser(r *http.Request) *User <span class="cov0" title="0">{
+        session := RequestSession(r)
+        if session == nil || session.UserID == "" </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">user, err := globalUserStore.Find(session.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">return user</span>
+}
+
+
+func RequireLogin(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+ // Let the request pass if we've got a user
+        if RequestUser(r) != nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov0" title="0">query := url.Values{}
+        query.Add("next", url.QueryEscape(r.URL.String()))
+        http.Redirect(w, r, "/login?"+query.Encode(), http.StatusFound)</span>
+}
+
+func FindOrCreateSession(w http.ResponseWriter, r *http.Request) *Session <span class="cov0" title="0">{
+        session := RequestSession(r)
+        if session == nil </span><span class="cov0" title="0">{
+                session = NewSession(w)
+        }</span>
+        <span class="cov0" title="0">return session</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package main
+import (
+        "os"
+        "io/ioutil"
+        "fmt"
+        "encoding/json"
+)
+type SessionStore interface {
+        Find(string) (*Session, error)
+        Save(*Session) error
+        Delete(*Session) error
+}
+type FileSessionStore struct {
+        filename string
+        Sessions map[string]Session
+}
+func NewFileSessionStore(name string) (*FileSessionStore, error) <span class="cov8" title="1">{
+        store := &amp;FileSessionStore{
+                Sessions: map[string]Session{},
+                filename: name,
+        }
+        contents, err := ioutil.ReadFile(name)
+        if err != nil </span><span class="cov0" title="0">{
+        // If it's a matter of the file not existing, that's ok
+                if os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        return store, nil
+                }</span>
+                <span class="cov0" title="0">return nil, err</span>
+        }
+        <span class="cov8" title="1">err = json.Unmarshal(contents, store)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return store, err</span>
+}
+func (s *FileSessionStore) Find(id string) (*Session, error) <span class="cov0" title="0">{
+        session, exists := s.Sessions[id]
+        if !exists </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+        <span class="cov0" title="0">return &amp;session, nil</span>
+}
+func (store *FileSessionStore) Save(session *Session) error <span class="cov0" title="0">{
+        store.Sessions[session.ID] = *session
+        contents, err := json.MarshalIndent(store, "", " ")
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return ioutil.WriteFile(store.filename, contents, 0660)</span>
+}
+func (store *FileSessionStore) Delete(session *Session) error <span class="cov0" title="0">{
+        delete(store.Sessions, session.ID)
+        contents, err := json.MarshalIndent(store, "", " ")
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return ioutil.WriteFile(store.filename, contents, 0660)</span>
+}
+var globalSessionStore SessionStore
+func init() <span class="cov8" title="1">{
+        sessionStore, err := NewFileSessionStore("./data/sessions.json")
+        if err != nil </span><span class="cov0" title="0">{
+        panic(fmt.Errorf("Error creating session store: %s", err))</span>
+        }
+        <span class="cov8" title="1">globalSessionStore = sessionStore</span>
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package main
+
+import (
+        "bytes"
+        "fmt"
+        "html/template"
+        "net/http"
+)
+
+var layoutFuncs = template.FuncMap{
+        "yield": func() (string, error) <span class="cov0" title="0">{
+                return "", fmt.Errorf("yield called inappropriately")
+        }</span>,
+}
+var layout = template.Must(
+        template.
+                New("layout.html").
+                Funcs(layoutFuncs).
+                ParseFiles("templates/layout.html"),
+)
+
+var templates = template.Must(template.New("t").ParseGlob("templates/**/*.html"))
+
+var errorTemplate = `
+&lt;html&gt;
+        &lt;body&gt;
+                &lt;h1&gt;Error rendering template %s&lt;/h1&gt;
+                &lt;p&gt;%s&lt;/p&gt;
+        &lt;/body&gt;
+&lt;/html&gt;
+`
+
+func RenderTemplate(w http.ResponseWriter, r *http.Request, name string, data map[string]interface{}) <span class="cov0" title="0">{
+        if data == nil </span><span class="cov0" title="0">{
+                data = map[string]interface{}{}
+        }</span>
+        <span class="cov0" title="0">data["CurrentUser"] = RequestUser(r)
+        data["Flash"] = r.URL.Query().Get("flash")
+        
+        funcs := template.FuncMap{
+                "yield": func() (template.HTML, error) </span><span class="cov0" title="0">{
+                        buf := bytes.NewBuffer(nil)
+                        err := templates.ExecuteTemplate(buf, name, data)
+                        return template.HTML(buf.String()), err
+                }</span>,
+        }
+
+        <span class="cov0" title="0">layoutClone, _ := layout.Clone()
+        layoutClone.Funcs(funcs)
+        err := layoutClone.Execute(w, data)
+
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(
+                        w,
+                        fmt.Sprintf(errorTemplate, name, err),
+                        http.StatusInternalServerError,
+                )
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package main
+
+import (
+        "golang.org/x/crypto/bcrypt"
+        "crypto/md5"
+        //"io"
+        "fmt"
+)
+
+type User struct {
+        ID             string
+        Email          string
+        HashedPassword string
+        Username       string
+}
+
+const (
+        hashCost       = 10
+        passwordLength = 6
+        userIDLength   = 16
+)
+
+func NewUser(username, email, password string) (User, error) <span class="cov8" title="1">{
+        user := User{
+                Email:    email,
+                Username: username,
+        }
+        if username == "" </span><span class="cov8" title="1">{
+                return user, errNoUsername
+        }</span>
+
+        <span class="cov8" title="1">if email == "" </span><span class="cov0" title="0">{
+                return user, errNoEmail
+        }</span>
+
+        <span class="cov8" title="1">if password == "" </span><span class="cov8" title="1">{
+                return user, errNoPassword
+        }</span>
+
+        <span class="cov8" title="1">if len(password) &lt; passwordLength </span><span class="cov0" title="0">{
+                return user, errPasswordTooShort
+        }</span>
+        
+        // Check if the username exists
+        <span class="cov8" title="1">existingUser, err := globalUserStore.FindByUsername(username)
+        if err != nil </span><span class="cov0" title="0">{
+                return user, err
+        }</span>
+        <span class="cov8" title="1">if existingUser != nil </span><span class="cov8" title="1">{
+                return user, errUsernameExists
+        }</span>
+        // Check if the email exists
+        <span class="cov8" title="1">existingUser, err = globalUserStore.FindByEmail(email)
+        if err != nil </span><span class="cov0" title="0">{
+                return user, err
+        }</span>
+        <span class="cov8" title="1">if existingUser != nil </span><span class="cov8" title="1">{
+                return user, errEmailExists
+        }</span>
+
+        
+        <span class="cov0" title="0">hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), hashCost)
+
+        user.HashedPassword = string(hashedPassword)
+        user.ID = GenerateID("usr", userIDLength)
+        
+        
+        return user, err</span>
+}
+func FindUser(username, password string) (*User, error) <span class="cov0" title="0">{
+        out := &amp;User{
+                Username: username,
+        }
+        existingUser, err := globalUserStore.FindByUsername(username)
+        if err != nil </span><span class="cov0" title="0">{
+                return out, err
+        }</span>
+        <span class="cov0" title="0">if existingUser == nil </span><span class="cov0" title="0">{
+                return out, errCredentialsIncorrect
+        }</span>
+        <span class="cov0" title="0">if bcrypt.CompareHashAndPassword(
+                []byte(existingUser.HashedPassword),
+                []byte(password),
+        ) != nil </span><span class="cov0" title="0">{
+                return out, errCredentialsIncorrect
+        }</span>
+        <span class="cov0" title="0">return existingUser, nil</span>
+}
+func UpdateUser(user *User, email, currentPassword, newPassword string) (User, error) <span class="cov0" title="0">{
+        out := *user
+        out.Email = email
+        // Check if the email exists
+        existingUser, err := globalUserStore.FindByEmail(email)
+        if err != nil </span><span class="cov0" title="0">{
+                return out, err
+        }</span>
+        <span class="cov0" title="0">if existingUser != nil &amp;&amp; existingUser.ID != user.ID </span><span class="cov0" title="0">{
+                return out, errEmailExists
+        }</span>
+        // At this point, we can update the email address
+        <span class="cov0" title="0">user.Email = email
+        // No current password? Don't try update the password.
+        if currentPassword == "" </span><span class="cov0" title="0">{
+                return out, nil
+        }</span>
+        <span class="cov0" title="0">if bcrypt.CompareHashAndPassword(
+                []byte(user.HashedPassword),
+                []byte(currentPassword),
+        ) != nil </span><span class="cov0" title="0">{
+                return out, errPasswordIncorrect
+        }</span>
+        <span class="cov0" title="0">if newPassword == "" </span><span class="cov0" title="0">{
+                return out, errNoPassword
+        }</span>
+        <span class="cov0" title="0">if len(newPassword) &lt; passwordLength </span><span class="cov0" title="0">{
+                return out, errPasswordTooShort
+        }</span>
+        <span class="cov0" title="0">hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), hashCost)
+        user.HashedPassword = string(hashedPassword)
+        return out, err</span>
+}
+
+func (user *User) AvatarURL() string <span class="cov0" title="0">{
+        return fmt.Sprintf(
+        "//www.gravatar.com/avatar/%x",
+                md5.Sum([]byte(user.Email)),
+        )
+}</span>
+func (user *User) ImagesRoute() string <span class="cov0" title="0">{
+        return "/user/" + user.ID
+}</span>
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package main
+import(
+        "os"
+        "fmt"
+        "strings"
+        "io/ioutil"
+        "encoding/json"
+)
+type UserStore interface {
+        Find(string) (*User, error)
+        FindByEmail(string) (*User, error)
+        FindByUsername(string) (*User, error)
+        Save(User) error
+}
+type FileUserStore struct {
+        filename string
+        Users map[string]User
+}
+func (store FileUserStore) Save(user User) error <span class="cov0" title="0">{
+        store.Users[user.ID] = user
+        contents, err := json.MarshalIndent(store, "", " ")
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        //0660 itu permission yang memberbolehkan write ke filenya
+        <span class="cov0" title="0">err = ioutil.WriteFile(store.filename, contents, 0660)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+func (store FileUserStore) Find(id string) (*User, error) <span class="cov0" title="0">{
+        user, ok := store.Users[id]
+        if ok </span><span class="cov0" title="0">{
+                return &amp;user, nil
+        }</span>
+        <span class="cov0" title="0">return nil, nil</span>
+}
+func (store FileUserStore) FindByUsername(username string) (*User,error) <span class="cov0" title="0">{
+        if username == "" </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+        <span class="cov0" title="0">for _, user := range store.Users </span><span class="cov0" title="0">{
+                if strings.ToLower(username) == strings.ToLower(user.Username) </span><span class="cov0" title="0">{
+                        return &amp;user, nil
+                }</span>
+        }
+        <span class="cov0" title="0">return nil, nil</span>
+}
+func (store FileUserStore) FindByEmail(email string) (*User,error) <span class="cov0" title="0">{
+        if email == "" </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+        <span class="cov0" title="0">for _, user := range store.Users </span><span class="cov0" title="0">{
+                if strings.ToLower(email) == strings.ToLower(user.Email) </span><span class="cov0" title="0">{
+                        return &amp;user, nil
+                }</span>
+        }
+        <span class="cov0" title="0">return nil, nil</span>
+}
+func NewFileUserStore(filename string) (*FileUserStore, error) <span class="cov8" title="1">{
+        store := &amp;FileUserStore{
+                Users: map[string]User{},
+                filename: filename,
+        }
+        contents, err := ioutil.ReadFile(filename)
+        if err != nil </span><span class="cov0" title="0">{
+                // If it's a matter of the file not existing, that's ok
+                if os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        return store, nil
+                }</span>
+                <span class="cov0" title="0">return nil, err</span>
+        }
+        <span class="cov8" title="1">err = json.Unmarshal(contents, store)
+        
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return store, nil</span>
+}
+var globalUserStore UserStore
+func init() <span class="cov8" title="1">{
+        store, err := NewFileUserStore("./data/users.json")
+        if err != nil </span><span class="cov0" title="0">{
+                panic(fmt.Errorf("Error creating user store: %s", err))</span>
+        }
+        <span class="cov8" title="1">globalUserStore = store</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

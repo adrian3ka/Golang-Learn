@@ -1,0 +1,24 @@
+{
+ "Sessions": {
+  "sess_CqEG6XXXsVfjevq9zV0h": {
+   "ID": "sess_CqEG6XXXsVfjevq9zV0h",
+   "UserID": "usr_WS58gCcxy0yMFMAO",
+   "Expiry": "2018-05-18T19:53:23.1798326+07:00"
+  },
+  "sess_PehdBkX2rkvA5SCo5eei": {
+   "ID": "sess_PehdBkX2rkvA5SCo5eei",
+   "UserID": "usr_WS58gCcxy0yMFMAO",
+   "Expiry": "2018-05-18T21:21:25.1376398+07:00"
+  },
+  "sess_V8IK9KwORwHoc06EC7gc": {
+   "ID": "sess_V8IK9KwORwHoc06EC7gc",
+   "UserID": "usr_WS58gCcxy0yMFMAO",
+   "Expiry": "2018-05-18T21:19:46.3748885+07:00"
+  },
+  "sess_gwwHBpiPIqVwjDb3UPDB": {
+   "ID": "sess_gwwHBpiPIqVwjDb3UPDB",
+   "UserID": "usr_WS58gCcxy0yMFMAO",
+   "Expiry": "2018-05-18T21:16:26.0664536+07:00"
+  }
+ }
+}
